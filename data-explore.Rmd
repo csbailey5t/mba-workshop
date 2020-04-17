@@ -1,0 +1,68 @@
+---
+title: "MBA Data Exploration"
+author: "Scott Bailey"
+date: "4/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse, warn.conflicts = FALSE)
+library(tidylog, warn.conflicts = FALSE)
+library(skimr)
+library(mgcv)
+library(lubridate)
+library(gratia)
+```
+
+```{r data-imports}
+features <- read_csv("data/features.csv")
+stores <- read_csv("data/stores.csv")
+test_df <-read_csv("data/test.csv")
+train_df <- read_csv("data/train.csv")
+sample_submission_df <- read_csv("data/sampleSubmission.csv")
+```
+```{r}
+skim(train_df)
+```
+```{r}
+train_df %>%
+  filter(Store == 1) %>%
+  filter(Dept == 1) %>%
+  ggplot(aes(Date, Weekly_Sales, color = IsHoliday)) +
+  geom_point()
+```
+
+Let's try to model a single department of a single store using a generalized additive model. We'll need to break apart the Date column into numeric variables
+ 
+```{r}
+train_dat_1_1 <- train_df %>%
+  filter(Store == 1) %>%
+  filter(Dept == 1) %>%
+  mutate(
+    Day = day(Date),
+    Month = month(Date),
+    Year = year(Date),
+    Week = week(Date)
+  )
+
+head(train_dat_1_1)
+```
+ 
+```{r}
+gam_mod <- gam(Weekly_Sales ~ s(Week) , data = train_dat_1_1)
+
+draw(gam_mod) 
+appraise(gam_mod) 
+```
+```{r}
+ggplot(data = train_dat_1_1, aes(x = Week, y = Weekly_Sales, color = Year)) +
+  geom_point() +
+  geom_line(aes(x=Week, y=fitted(gam_mod)))
+```
+ 
+ 
+ Need to group by store to get aggregate sum of weekly sales
