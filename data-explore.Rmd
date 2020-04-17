@@ -16,6 +16,7 @@ library(skimr)
 library(mgcv)
 library(lubridate)
 library(gratia)
+library(forcats)
 ```
 
 ```{r data-imports}
@@ -53,16 +54,82 @@ head(train_dat_1_1)
 ```
  
 ```{r}
-gam_mod <- gam(Weekly_Sales ~ s(Week) , data = train_dat_1_1)
+ggplot(train_dat_1_1, aes(x=IsHoliday, y=Weekly_Sales)) +
+  geom_point()
+```
+ 
+ 
+```{r}
+gam_mod <- gam(Weekly_Sales ~ s(Week), data = train_dat_1_1, method="REML")
 
 draw(gam_mod) 
-appraise(gam_mod) 
+plot(gam_mod, residuals = TRUE, pch = 1, cex = 1, shade = TRUE)
 ```
 ```{r}
 ggplot(data = train_dat_1_1, aes(x = Week, y = Weekly_Sales, color = Year)) +
-  geom_point() +
+  geom_point(aes(shape = IsHoliday)) +
   geom_line(aes(x=Week, y=fitted(gam_mod)))
 ```
  
+ Let's take a look at the full training data. 
+ 
+```{r}
+train_mod <- train_df %>%
+  mutate(
+    Day = day(Date),
+    Month = month(Date),
+    Year = year(Date),
+    Week = week(Date),
+    Store = as_factor(Store),
+    Dept = as_factor(Dept)
+  )
+  
+
+head(train_mod)
+```
+ 
+Let's do some exploratory graphing with some groupby statements. 
+
+```{r}
+train_mod %>%
+  group_by(Store) %>%
+  summarise(total_sales = sum(Weekly_Sales)) %>%
+  ggplot(aes(x = Store, y = total_sales)) +
+  geom_col()
+  
+  
+```
+```{r}
+train_mod %>%
+  group_by(Dept) %>%
+  summarise(total_sales = sum(Weekly_Sales)) %>%
+  ggplot(aes(x = Dept, y = total_sales)) +
+  geom_col()
+```
+
+```{r}
+train_mod %>%
+  ggplot(aes(x = Week, y = Weekly_Sales, color = Year)) +
+  geom_point(aes(shape = IsHoliday))
+```
+
+
+Train a GAM on whole data - THESE ARE SLOW AND NOT EFFECTIVE BC THE DATA DOESNT HAVE AN UNDERLYING RELATIONSHIP. THEY HAVE TO BE GROUPED BY STORE
+```{r}
+gam_mod_w <- gam(Weekly_Sales ~ s(Week) + Store + Dept, data = train_mod, method="REML")
+
+gam_mod_w <- gam(Weekly_Sales ~ s(Week, by=Store) + Store, data = train_mod, method="REML")
+```
+```{r}
+train_1 <- train_mod %>%
+  filter(Store == 1)
+
+train_1 %>%
+  ggplot(aes(x = Week, y = Weekly_Sales)) +
+  geom_point() +
+  facet_wrap(vars(Dept))
+```
+
  
  Need to group by store to get aggregate sum of weekly sales
+ Facet on store, department, year
