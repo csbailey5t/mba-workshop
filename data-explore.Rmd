@@ -131,5 +131,85 @@ train_1 %>%
 ```
 
  
- Need to group by store to get aggregate sum of weekly sales
- Facet on store, department, year
+Need to group by store to get aggregate sum of weekly sales
+Facet on store, department, year
+ 
+ 
+## Switch to working on features.csv file
+ 
+```{r}
+skim(features)
+```
+ 
+Will want to merge with training file or store file at some point.
+
+
+Count the number of obs for each store
+```{r}
+features %>%
+  group_by(Store) %>%
+  count() 
+```
+
+Let's figure out the average fuel price for each store
+
+```{r}
+features %>%
+  group_by(Store) %>%
+  summarize(avg_fuel = mean(Fuel_Price)) %>%
+  ggplot(aes(Store, avg_fuel)) +
+  geom_col()
+```
+
+Let's do the same for temperature
+
+```{r}
+features %>%
+  group_by(Store) %>%
+  summarize(avg_temp = mean(Temperature)) %>%
+  ggplot(aes(Store, avg_temp)) +
+  geom_col()
+```
+
+Let's look at just the temp for a single store over time. 
+
+```{r}
+features %>%
+  filter(Store == 1) %>%
+  ggplot(aes(Date, Temperature)) +
+  geom_point()
+```
+
+Let's do the same to gas prices
+
+```{r}
+features %>%
+  filter(Store == 1) %>%
+  ggplot(aes(Date, Fuel_Price)) +
+  geom_point()
+```
+
+What if we just do a scatter plot with all temperatures
+
+```{r}
+features %>%
+  ggplot(aes(Date, Temperature)) +
+  geom_point()
+```
+
+We could do the same thing, but color the points by store.
+
+```{r}
+features %>%
+  ggplot(aes(Date, Temperature)) +
+  geom_point(aes(color=Store))
+```
+
+```{r}
+features %>%
+  mutate(Store = as_factor(Store)) %>%
+  ggplot(aes(Date, Temperature)) +
+  geom_point(aes(color=Store), alpha=0.2) +
+  scale_color_discrete()
+```
+
