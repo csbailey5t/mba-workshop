@@ -1,0 +1,131 @@
+---
+title: "Exploring Data with R"
+author: "Scott Bailey"
+date: "5/1/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Exploring Data with R
+
+May 5, 2020
+
+Instructors:
+  - Scott Bailey
+  - Natalia Lopez 
+  
+## Approach and Learning Goals
+
+We're going to take a very pragmatic approach in our workshop today. Instead of thinking about R as a programming language we're trying to learn to code in, we're going to approach R as just a tool that we can use to do some fundamental data exploration and analysis. In that line of thinking, instead of learning a lot of base R, and instead of building up an understanding of syntax and semantics according to fundamental coding concepts, we're going to start using the tidyverse packages and approach right away in an applied manner. Briefly, tidyverse is a set of opinionated packages with a coherent approach to how to work with data in R. For many of us, they make R easier to learn and to use.
+
+We'll use tidyverse to do a few specific things today, which will give us a general data exploration and analysis workflow:
+
+1. Import data
+2. Get summary statistics on data
+3. Pre-process/clean data
+4. Visualize data
+5. Fit a model to some of our data
+
+Most importantly, I want you to have the experience of writing code with data and making things happen. 
+
+## Orientation to RStudio
+
+RStudio is a full-featured integrated development environment for R. Let's take a brief tour through RStudio's interface, including a look at the `Preferences`. 
+
+## Creating a new R script
+
+There are several different formats of R scripts, including RMarkdown files and R Notebooks. Just to stay focused on learning and writing R code today, we're going to stick with the straightforward `.R` scripts. 
+
+* Create new `.R` script and name it `exploration.R`. 
+
+## Installing and importing packages
+
+By default, you will have base R and and all it's capacity in your script. In order to use the tidyverse packages, and any other of the many great R packages, you'll need to install them for your version of R, and then import them into your script. 
+
+```{r install_packages, results='hide'}
+install.packages(c("tidyverse",
+                   "tidylog",
+                   "forcats",
+                   "lubridate",
+                   "skimr",
+                   "mgcv",
+                   "gratia"))
+```
+
+```{r import_libraries, results='hide'}
+library(tidyverse, warn.conflicts = FALSE)
+library(tidylog, warn.conflicts = FALSE)
+library(forcats)
+library(lubridate)
+library(skimr)
+library(mgcv)
+library(gratia)
+```
+
+## Importing Data
+
+The data you provided for this workshop is anonymized sales related data for a major big-box store. There are a number of files, documented in the Readme file I sent out along with the data. We're going to focus on two particular files, and import both right here at the beginning. 
+
+```{r import_data}
+features_df <- read_csv("data/features.csv")
+train_df <- read_csv("data/train.csv")
+```
+
+Once you've run these lines of code, you should see new data shown in the `Environment` pane, along with the dimensions of the data. We can open up this data and view it as a table, but let's hold off on doing that and instead explore it a bit with R code. 
+
+## Getting an overview of our data
+
+There's a few different ways that we can get a high-level sense of our data. We'll start with the `glimpse` function from the tidyverse and start wth the data stored in `features_df`.  
+
+```{r}
+glimpse(features_df)
+```
+
+We're able to see how many rows we have, how many columns or variables, their data types, and the first values in those columns. The data being shown organized by columns is a hint here; R works most effectively when you think about operating on columns of data. 
+
+If we want to take a bit deeper look while still staying at a high level, we can use the `summary` function from base R. 
+
+```{r}
+summary(features_df)
+```
+
+This isn't bad - we're getting quartile breakdowns of numeric variables now. We can do a bit better with the `skim` function from the `skimr` package though, and it's my go to when I just need to dig into some data. 
+
+```{r}
+skim(features_df)
+```
+
+What do get here that we didn't before?
+
+Let's pay attention to the types of our variables. R does it's best to figure out the data types, but I notice one that seems not quite right to me: Store. Right now it's a numeric, but each of these numbers is really a unique identifier for a store. As such, we can consider them categorical data. Let's go ahead and convert that column to the factor data type. 
+
+```{r}
+features_df$Store <- as_factor(features_df$Store)
+
+skim(features_df$Store)
+```
+
+We had been using these overview functions - `summary`, `glimpse`, and `skim` - on the whole dataframe or tibble, but we can also check out single columns. 
+
+## Subsetting data
+
+What if we want to narrow down our data of interest rather than looking at the whole 8000+ observations? The tidyverse provides a set of functions for common subsetting tasks. We'll start with `filter`.
+
+Let's get back just the data for store 1. 
+
+```{r}
+filter(features_df, Store == 1)
+```
+
+We haven't stored this subset anywhere yet, just printed it out to the standard output. We'll get to saving the data into a new variable shortly. 
+
+The `filter` function takes at least two arguments: the dataframe you want to filter, and a condition to determine what to include. Here's our condition is where the value in the `Store` variable is 1. 
+
+
+
+## Pre-processing or cleaning data
+
+Remove all the columns containing markdown
