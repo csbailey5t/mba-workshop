@@ -5,9 +5,20 @@ date: "4/16/2020"
 output: html_document
 ---
 
+```{r}
+install.packages(c("tidyverse", 
+                 "forcats",
+                 "skimr",
+                 "tidylog",
+                 "mgcv",
+                 "lubridate",
+                 "gratia"))
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 
 ```{r}
 library(tidyverse, warn.conflicts = FALSE)
@@ -213,3 +224,75 @@ features %>%
   scale_color_discrete()
 ```
 
+That's a lot to look at, so let's take a sample of stores, then plot a scatterplot where the x and y correspond to temperature and fuel cost. 
+
+```{r}
+sample_stores = sample(1:50, 10)
+features %>%
+  filter(Store %in% sample_stores) %>%
+  mutate(Store = as_factor(Store)) %>%
+  ggplot(aes(Temperature, Fuel_Price)) +
+  geom_point(aes(color=Store), alpha=0.2) +
+  scale_color_discrete()
+  
+```
+
+An example of facets in ggplot
+
+```{r}
+features %>%
+  filter(Store %in% sample_stores) %>%
+  mutate(Store = as_factor(Store)) %>%
+  ggplot(aes(Temperature, Fuel_Price)) +
+  geom_point(aes(color=Store), alpha=0.2) +
+  scale_color_discrete() +
+  facet_wrap(~ Store)
+```
+
+The consistency of this shape is really interesting. Let's see if we can break it down just a bit more to figure out whether another variable, like the year might be impacting it. 
+
+```{r}
+features %>%
+  filter(Store %in% sample_stores) %>%
+  mutate(Year = as_factor(year(Date))) %>%
+  mutate(Store = as_factor(Store)) %>%
+  ggplot(aes(Temperature, Fuel_Price)) +
+  geom_point(aes(color=Store, shape=Year), alpha=0.2) +
+  scale_color_discrete() +
+  facet_wrap(~ Store)
+```
+
+Do something with CPI.
+
+```{r}
+skim(features$CPI)
+```
+
+
+```{r}
+features %>%
+  ggplot(aes(Temperature, CPI)) +
+  geom_point()
+```
+
+```{r}
+features %>%
+  ggplot(aes(Date, CPI)) +
+  geom_point()
+```
+
+
+```{r}
+features %>%
+  ggplot(aes(CPI, Unemployment)) +
+  geom_point()
+```
+
+Do avg CPI with different groupings
+Histogram of CPI?
+Do a viz with a mean line somewhere. 
+Handle missing data explicitly
+Join datasets?
+Something with groupby of multiple columns 
+Use glimpse and summary 
+Build in some activities
