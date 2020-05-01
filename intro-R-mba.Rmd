@@ -124,8 +124,68 @@ We haven't stored this subset anywhere yet, just printed it out to the standard 
 
 The `filter` function takes at least two arguments: the dataframe you want to filter, and a condition to determine what to include. Here's our condition is where the value in the `Store` variable is 1. 
 
+There's a more common way to use these "verbs" in tidyverse, though, that let's us chain together multiple actions. In the spirit of Unix, we have `pipes`, unidirectional data flows, which use this character: `%>%`. Let's see it in action. 
+```{r}
+features_df %>%
+  filter(Store == 1)
+```
 
+The two code blocks above are the same, but you'll more often see the second version. When we use a pipe, we send the data in the variable in front of the pipe to the function after the pipe. We pipe the data into the function. This data goes into the function as the first parameter, and R knows that what we then put into the function are the rest of the parameters, such as the condition. 
+
+If that doesn't make sense yet, don't worry. We're going to keep using it, and we'll build up our knowledge with practice. 
+
+Let's run that code again, but save the filtered dataset we get back this time into a new variable, `features_store_1`. 
+
+```{r}
+features_store_1 <- features_df %>%
+  filter(Store == 1)
+
+skim(features_store_1)
+```
+
+We can combine filter conditions by chaining together filter statements or just adding multiple conditions to a single filter function. 
+
+```{r}
+features_df %>%
+  filter(Store == 1 & Date > as_date("2012-01-01"))
+
+# is the same as
+
+features_df %>%
+  filter(Store == 1) %>%
+  filter(Date > as_date("2012-01-01"))
+
+# is the same as 
+
+features_store_1 %>%
+  filter(Date > as_date("2012-01-01"))
+
+```
+
+We can also subset by columns with the `select` verb or function. We'll start with our full `features_df` data, filter it by store, then select just some columns. 
+
+```{r}
+features_df %>%
+  filter(Store <= 10) %>%
+  select(Store, Date, Temperature, Fuel_Price)
+```
+
+Our code doesn't work. Any ideas why?
+
+```{r}
+features_df %>%
+  filter(Store %in% c(1,10)) %>%
+  select(Store, Date, Temperature, Fuel_Price)
+```
+
+What did we do differently that made our code work?
+
+`filter` and `select` are very powerful, and we've just scratched the surface. We're going to keep moving, though, so we can try to get through a more full workflow. 
 
 ## Pre-processing or cleaning data
 
 Remove all the columns containing markdown
+
+## Aggregate measures
+
+Groupby with ... 
