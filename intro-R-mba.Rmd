@@ -182,9 +182,53 @@ What did we do differently that made our code work?
 
 `filter` and `select` are very powerful, and we've just scratched the surface. We're going to keep moving, though, so we can try to get through a more full workflow. 
 
+MAYBE? BUT PROBABLY TOO MUCH - remove all columns that have Markdown in title
+
 ## Pre-processing or cleaning data
 
-Remove all the columns containing markdown
+There are a few different things we commonly think about in pre-proccessing and cleaning data. First, we might think about missing data. Let's check how much missing data we have. 
+
+```{r}
+features_df %>%
+  skim()
+```
+
+The various `Markdown` columns have quite a bit of missing data, while CPI and Unemployment have some. There are a lot of strategies for handling missing data. Since we're just doing a quick tour through R and tidyverse, right now we're just going to drop the rows with missing values in `CPI` and `Unemployment` while getting rid of the `Markdown` columns completely. 
+
+```{r}
+features_df_clean <- features_df %>%
+  drop_na(CPI, Unemployment) %>%
+  select(-starts_with("Markdown"))
+```
+
+During pre-processing, we may also create derivative columns that we might need for our analysis. In this case, let's break the `Date` column up, and create columns for `Month`, `Day`, `Week`, and `Year`. You could treat the dates as strings, and split the date on the hyphen character. It's better to take advantage of R knowing that the `Date` column has data of a `Date` type though. We'll use functions from the great `lubridate` library to create these columns. 
+
+```{r}
+features_df_clean <- features_df_clean %>%
+  mutate(
+    Day = day(Date),
+    Month = month(Date),
+    Year = year(Date),
+    Week = week(Date),
+  )
+
+head(features_df_clean)
+```
+
+That's all we're going to do for now with pre-processing, but it's good to think about how flexible this pattern is with `mutate`. 
+
+## Visualizing Data
+
+We've been looking at our data in tables so far, but let's switch to using visualization to get some sense of the data. The most popular plotting tool in R these days is `ggplot2`, which is part of the tidyverse. It is structured by the idea of the [Grammar of Graphics](https://vita.had.co.nz/papers/layered-grammar.html), and allows us to build up visualizations layer by layer. 
+
+Let's start with a quick scatter plot. Notice the switch from the pipe (`%>%`) to the plus sign in the `ggplot` code.
+
+```{r}
+features_df %>%
+  ggplot(aes(x = Date, y = Temperature)) +
+  geom_point()
+```
+
 
 ## Aggregate measures
 
