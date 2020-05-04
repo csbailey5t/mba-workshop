@@ -29,7 +29,7 @@ We'll use tidyverse to do a few specific things today, which will give us a gene
 4. Visualize data
 5. Fit a model to some of our data
 
-Most importantly, I want you to have the experience of writing code with data and making things happen. 
+Our goal today isn't to get through every single line of code or every idea. Most importantly, I want you to have the experience of writing code with data and making things happen. 
 
 ## Orientation to RStudio
 
@@ -45,7 +45,7 @@ There are several different formats of R scripts, including RMarkdown files and 
 
 By default, you will have base R and and all it's capacity in your script. In order to use the tidyverse packages, and any other of the many great R packages, you'll need to install them for your version of R, and then import them into your script. 
 
-```{r install_packages, results='hide'}
+```{r install_packages, results='hide', eval=FALSE}
 install.packages(c("tidyverse",
                    "forcats",
                    "lubridate",
@@ -277,7 +277,7 @@ The tidyverse way to do aggregations is using the "split-apply-combine" approach
 Maybe we want to know what the average temperature is for each store. We can group the observations by `Store`, and take the mean of the values in the `Temperature` column. 
 
 ```{r}
-features %>%
+features_df %>%
   group_by(Store) %>%
   summarise(avg_temp = mean(Temperature))
 ```
@@ -285,7 +285,7 @@ features %>%
 We can sort this data by the value in `avg_temp`.
 
 ```{r}
-features %>%
+features_df %>%
   group_by(Store) %>%
   summarise(avg_temp = mean(Temperature)) %>%
   arrange(desc(avg_temp))
@@ -301,4 +301,95 @@ features_df %>%
   ggplot(aes(x = Store, y = avg_temp)) +
   geom_point()
 ```
+
+We've just used `mean` throughout this example, but you could use any number of different built in or custom functions, as long as they take a vector or series of values, and condense them to a single value. 
+
+## A brief look at modeling
+
+Let's switch over to our other dataset, stored in `train_df`, and apply some of what we've learned. At the end, we'll also take a quick look at modeling. 
+
+We'll start with a high-level look at the data. 
+
+```{r}
+skim(train_df)
+```
+ 
+Here each row or observation is the sales data for a week for a single department in a single store. There are 421,570 observations, so we may not have much success trying to put every single point on a graph. Let's make the `Store` and `Dept` columns factors, then start with some filtering. 
+
+```{r}
+train_df$Store = as_factor(train_df$Store)
+train_df$Dept = as_factor(train_df$Dept)
+
+
+train_df %>%
+  filter(Store == 1) %>%
+  filter(Dept == 1) %>%
+  ggplot(aes(Date, Weekly_Sales, color = IsHoliday)) +
+  geom_point()
+```
+
+We can see that there is some pattern to the sales of a single department in a single store, though it's a bit loose at points. Let's try another department. 
+
+```{r}
+train_df %>%
+  filter(Store == 1) %>%
+  filter(Dept == 2) %>%
+  ggplot(aes(Date, Weekly_Sales, color = IsHoliday)) +
+  geom_point()
+```
+
+This looks like a pretty different pattern. We could definitely keep going like this, and could programmatically generate and save figures like this for every department and every store. Let's do a bit of aggregation, though, to look at the whole data set. 
+
+Maybe we're interested in the total sales for each store over the multi-year period. 
+
+```{r}
+train_df %>%
+  group_by(Store) %>%
+  summarise(total_sales = sum(Weekly_Sales)) %>%
+  ggplot(aes(x = Store, y = total_sales)) +
+  geom_col()
+```
+
+Some of these stores have had substantially higher sales than others. 
+
+We could also group the data by department instead, to see which departments typically sell more. 
+
+```{r}
+train_df %>%
+  group_by(Dept) %>%
+  summarise(total_sales = sum(Weekly_Sales)) %>%
+  ggplot(aes(x = Dept, y = total_sales)) +
+  geom_col()
+```
+
+
+As a final exercise, let's think about how we might model some of this data, and see what R could do for us there. We will need to create a column for the `Week` as we did in the features data. 
+
+```{r}
+train_mod <- train_df %>%
+  filter(Store == 1) %>%
+  filter(Dept == 1) %>%
+  mutate(
+    Day = day(Date),
+    Month = month(Date),
+    Year = year(Date),
+    Week = week(Date)
+  )
+
+train_mod %>%
+  ggplot(aes(x = Week, y = Weekly_Sales)) +
+  geom_point()
+```
+
+
+We have a non-linear shape with multiple curves, so we'll try out a generalized additive model.
+
+```{r}
+gam_mod <- gam(Weekly_Sales ~ s(Week), data = train_mod, method="REML")
+
+draw(gam_mod) 
+plot(gam_mod, residuals = TRUE, pch = 1, cex = 1, shade = TRUE)
+```
+
+This is just a first pass at a model. We could pull the coefficients and examine them. We could start modifying parameters in the gam, and try to pick up a bit more on the two high curves in the early distribution of the data. For now, though, it's enough to see that we can do this advanced sort of analysis fairly quickly because of the great packages that have been created for R. For anything related to data exploration, analysis, visualization, R is incredibly power, and incredibly flexible. 
 
