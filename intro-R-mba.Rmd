@@ -47,7 +47,6 @@ By default, you will have base R and and all it's capacity in your script. In or
 
 ```{r install_packages, results='hide'}
 install.packages(c("tidyverse",
-                   "tidylog",
                    "forcats",
                    "lubridate",
                    "skimr",
@@ -57,7 +56,6 @@ install.packages(c("tidyverse",
 
 ```{r import_libraries, results='hide'}
 library(tidyverse, warn.conflicts = FALSE)
-library(tidylog, warn.conflicts = FALSE)
 library(forcats)
 library(lubridate)
 library(skimr)
@@ -229,7 +227,78 @@ features_df %>%
   geom_point()
 ```
 
+Since we're mapping columns to different aspects of the graphic, let's try to add in a bit more data. 
+
+```{r}
+features_df %>%
+  ggplot(aes(x = Date, y = Temperature)) +
+  geom_point(aes(color = Store))
+```
+
+This is still really busy. Let's take a sample of the data, graph that, and then place around with the opacity of the points to try to improve the image. 
+
+```{r}
+sample_stores = sample(1:50, 10)
+features_df %>%
+  filter(Store %in% sample_stores) %>%
+  ggplot(aes(x = Date, y = Temperature)) +
+  geom_point(aes(color=Store), alpha=0.4)
+```
+
+We can start to see trends in the temperatuer here, differentiated by individual stores. 
+
+We can use other shapes to get a sense of the distribution of our data. Let's build a histogram that let's us explore the distribution of the CPI over the whole dataset. 
+
+```{r}
+features_df %>%
+  ggplot(aes(CPI)) +
+  geom_histogram(fill = "white", color = "grey30")
+```
+
+This shape is interesting. I'm definitely not a business person or an economist, so there might be a clear explanation you know for why we have such a high number of observations with a low CPI, then a huge gap in the middle. 
+
+Let's add some reference lines to this graph: a mean line that will help us see how much of this distribution falls above or below the mean CPI for the data, and the same for median. 
+
+```{r}
+features_df %>%
+  ggplot(aes(CPI)) +
+  geom_histogram(fill = "white", color = "grey30") +
+  geom_vline(aes(xintercept = mean(features_df$CPI, na.rm = TRUE)), color = "red") +
+  geom_vline(aes(xintercept = median(features_df$CPI, na.rm = TRUE)), color = "blue")
+```
+
+
+We're going to keep playing around with `ggplot2`, but let's also learn a bit about aggregate measures while we're doing that.
 
 ## Aggregate measures
 
-Groupby with ... 
+The tidyverse way to do aggregations is using the "split-apply-combine" approach, facilitated by functions like `group_by` and `summarise`. Let's see it in action. 
+
+Maybe we want to know what the average temperature is for each store. We can group the observations by `Store`, and take the mean of the values in the `Temperature` column. 
+
+```{r}
+features %>%
+  group_by(Store) %>%
+  summarise(avg_temp = mean(Temperature))
+```
+
+We can sort this data by the value in `avg_temp`.
+
+```{r}
+features %>%
+  group_by(Store) %>%
+  summarise(avg_temp = mean(Temperature)) %>%
+  arrange(desc(avg_temp))
+```
+
+
+The result itself can be saved as a dataframe or tibble, then modified or used as we want. We can also just add `ggplot` code to the end of our statement to see results on the fly when we're just doing some data exploration. 
+
+```{r}
+features_df %>%
+  group_by(Store) %>%
+  summarise(avg_temp = mean(Temperature)) %>%
+  ggplot(aes(x = Store, y = avg_temp)) +
+  geom_point()
+```
+
