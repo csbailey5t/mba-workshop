@@ -182,8 +182,6 @@ What did we do differently that made our code work?
 
 `filter` and `select` are very powerful, and we've just scratched the surface. We're going to keep moving, though, so we can try to get through a more full workflow. 
 
-MAYBE? BUT PROBABLY TOO MUCH - remove all columns that have Markdown in title
-
 ## Pre-processing or cleaning data
 
 There are a few different things we commonly think about in pre-proccessing and cleaning data. First, we might think about missing data. Let's check how much missing data we have. 
@@ -247,7 +245,7 @@ features_df %>%
   geom_point(aes(color=Store), alpha=0.4)
 ```
 
-We can start to see trends in the temperatuer here, differentiated by individual stores. 
+We can start to see trends in the temperature here, differentiated by individual stores. 
 
 We can use other shapes to get a sense of the distribution of our data. Let's build a histogram that let's us explore the distribution of the CPI over the whole dataset. 
 
