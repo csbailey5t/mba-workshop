@@ -1,0 +1,20 @@
+install.packages("tidyverse")
+install.packages("forcats")
+install.packages("lubridate")
+install.packages("skimr")
+install.packages("mgcv")
+install.packages("gratia")
+
+library(tidyverse)
+library(forcats)
+library(lubridate)
+library(skimr)
+library(mgcv)
+library(gratia)
+
+features_df <- read_csv("data/features.csv")
+train_df <- read_csv("data/train.csv")
+
+glimpse(features_df)
+summary(features_df)
+skim(features_df)

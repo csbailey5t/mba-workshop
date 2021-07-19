@@ -393,3 +393,14 @@ plot(gam_mod, residuals = TRUE, pch = 1, cex = 1, shade = TRUE)
 
 This is just a first pass at a model. We could pull the coefficients and examine them. We could start modifying parameters in the gam, and try to pick up a bit more on the two high curves in the early distribution of the data. For now, though, it's enough to see that we can do this advanced sort of analysis fairly quickly because of the great packages that have been created for R. For anything related to data exploration, analysis, visualization, R is incredibly power, and incredibly flexible. 
 
+## Further Resources
+
+There is a ton of great content to help with learning R online. Here's just a few resources that I think are solid. 
+
+- Hadley Wickham's R for Data Science - the essential guide from the creator of the tidyverse: https://r4ds.had.co.nz/
+- DataQuest - online learning - free and paid: https://www.dataquest.io/path/data-analyst-r/ 
+- Chris Engelhardt's list of data science resources: https://github.com/Chris-Engelhardt/data_sci_guide
+- Roger Peng's R Programming for Data Science: https://bookdown.org/rdpeng/rprogdatascience/
+- Jenny Bryan's Stats545 course: https://stat545.com/
+- RStudio Conf videos - more advanced sometimes, but great: https://rstudio.com/resources/rstudioconf-2020/
+- For intermediate folks with a bit of experience already, What They Forgot to Teach You about R from Jenny Bryan and Jim Hester is wonderful, and should be definitive for best practices for projects and workflows: https://rstats.wtf/
